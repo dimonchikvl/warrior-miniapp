@@ -8,15 +8,18 @@ cur.execute("""
 CREATE TABLE IF NOT EXISTS users (
     user_id INTEGER PRIMARY KEY,
 
+    step TEXT DEFAULT 'onboarding',
+
+    goal TEXT,
+    age INTEGER,
+    height INTEGER,
+    weight INTEGER,
+    activity TEXT,
+    bad_habit TEXT,
+
     xp INTEGER DEFAULT 0,
     level INTEGER DEFAULT 1,
     coins INTEGER DEFAULT 0,
-
-    strength INTEGER DEFAULT 0,
-    discipline INTEGER DEFAULT 0,
-    finance INTEGER DEFAULT 0,
-    content INTEGER DEFAULT 0,
-
     energy INTEGER DEFAULT 100,
 
     streak INTEGER DEFAULT 0,
@@ -48,6 +51,6 @@ def reset_daily(uid):
     user = get_user(uid)
     today = str(date.today())
 
-    if user[10] != today:
+    if user[13] != today:
         update_user(uid, "energy", 100)
         update_user(uid, "last_day", today)
