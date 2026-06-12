@@ -3,7 +3,9 @@ from db import get_user, update_user
 
 COOLDOWN = {}
 
-
+# =========================
+# ANTI-SPAM
+# =========================
 def can_click(uid):
     now = time.time()
     if uid in COOLDOWN and now - COOLDOWN[uid] < 1.5:
@@ -12,6 +14,9 @@ def can_click(uid):
     return True
 
 
+# =========================
+# XP SYSTEM
+# =========================
 def xp_needed(level):
     return 120 + (level - 1) * 80
 
@@ -25,6 +30,81 @@ TASKS = {
 }
 
 
+# =========================
+# 🧠 NUTRITION CALCULATOR (КБЖУ)
+# =========================
+def calc_kbju(weight, goal):
+    protein = weight * 1.6
+
+    if goal == "bulk":
+        calories = weight * 33
+    elif goal == "cut":
+        calories = weight * 25
+    else:
+        calories = weight * 30
+
+    fat = weight * 1
+    carbs = (calories - protein * 4 - fat * 9) / 4
+
+    return {
+        "calories": int(calories),
+        "protein": int(protein),
+        "fat": int(fat),
+        "carbs": int(carbs)
+    }
+
+
+# =========================
+# 🚶 STEP PROGRESSION SYSTEM
+# =========================
+def steps_plan(day):
+    base = 8000
+    steps = base + day * 500
+    return min(steps, 12000)
+
+
+# =========================
+# 💪 TRAINING PLAN
+# =========================
+def training_plan(goal):
+    if goal == "bulk":
+        return ["Грудь", "Спина", "Ноги", "Плечи"]
+
+    if goal == "cut":
+        return ["Full body", "Кардио 30-40 мин"]
+
+    return ["Лёгкая активность / прогулка"]
+
+
+# =========================
+# 🧠 HABIT SYSTEM
+# =========================
+def habit_plan(habit):
+    if habit == "smoking":
+        return [
+            "Уменьши на 1 сигарету",
+            "Замени на воду",
+            "10 глубоких вдохов"
+        ]
+
+    if habit == "gaming":
+        return [
+            "Играй только после задач",
+            "Ограничь 1 час"
+        ]
+
+    if habit == "gambling":
+        return [
+            "Не заходи сегодня",
+            "Замени на прогулку"
+        ]
+
+    return ["Фокус на контроль привычки"]
+
+
+# =========================
+# 🧩 MAIN XP LOGIC
+# =========================
 def add_xp(uid, amount, stat=None):
     user = get_user(uid)
 
@@ -84,23 +164,55 @@ def add_xp(uid, amount, stat=None):
         "energy": energy,
         "leveled_up": leveled_up
     }
-    # ===== NUTRITION SYSTEM =====
-def calc_kbju(weight, goal):
-    protein = weight * 1.6
+
+
+# =========================
+# 🔥 FULL AI PLAN GENERATOR
+# =========================
+def generate_plan(user):
+    """
+    user format (пример):
+    {
+        "goal": "cut",
+        "weight": 80,
+        "height": 180,
+        "age": 20,
+        "day": 3,
+        "bad_habit": "smoking"
+    }
+    """
+
+    goal = user["goal"]
+
+    if goal == "cut":
+        return {
+            "type": "fat_loss",
+            "steps": steps_plan(user["day"]),
+            "kbju": calc_kbju(user["weight"], "cut"),
+            "training": training_plan("cut")
+        }
 
     if goal == "bulk":
-        calories = weight * 33
-    elif goal == "cut":
-        calories = weight * 25
-    else:
-        calories = weight * 30
+        return {
+            "type": "mass_gain",
+            "steps": steps_plan(user["day"]),
+            "kbju": calc_kbju(user["weight"], "bulk"),
+            "training": training_plan("bulk")
+        }
 
-    fat = weight * 1
-    carbs = (calories - protein*4 - fat*9) / 4
+    if goal == "discipline":
+        return {
+            "type": "habit",
+            "habit_plan": habit_plan(user["bad_habit"])
+        }
 
-    return {
-        "calories": int(calories),
-        "protein": int(protein),
-        "fat": int(fat),
-        "carbs": int(carbs)
-    }
+    if goal == "content":
+        return {
+            "type": "creator",
+            "content_plan": [
+                "Идея видео",
+                "Съёмка",
+                "Монтаж",
+                "Публикация"
+            ]
+        }
