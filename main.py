@@ -9,96 +9,103 @@ from shop import SHOP
 app = FastAPI()
 
 
-# =========================
-# 🔥 SAFE USER INIT
-# =========================
+# =========================================================
+# 🧠 HELPER: SAFE USER
+# =========================================================
 def ensure_user(uid):
     user = get_user(uid)
-    if not user:
-        return None
     return user
 
 
-# =========================
-# 🧠 PLAN GENERATOR (FIXED)
-# =========================
+# =========================================================
+# 🧠 1. AI PLAN GENERATION
+# =========================================================
 @app.post("/generate-plan")
 def plan(data: dict):
-    user = get_user(data["user_id"])
+
+    user = ensure_user(data["user_id"])
+
     if not user:
         return {"error": "user not found"}
 
     safe_data = {
-        "goal": user[7] or "discipline",
-        "weight": user[5] or 70,
-        "height": user[4] or 175,
-        "age": user[3] or 20,
-        "day": 1,
-        "bad_habit": "smoking"
+        "goal": user[2],
+        "age": user[3],
+        "height": user[4],
+        "weight": user[5],
+        "activity": user[6],
+        "bad_habit": user[7] or "none",
+        "day": 1
     }
 
     return generate_plan(safe_data)
 
 
-# =========================
-# ⚔️ COMPLETE TASK (CORE LOOP)
-# =========================
+# =========================================================
+# ⚔️ 2. CORE GAME LOOP
+# =========================================================
 @app.post("/complete-task")
 def complete_task(data: Task):
 
+    # -------------------------
+    # 👤 USER CHECK
+    # -------------------------
     user = ensure_user(data.user_id)
     if not user:
         return {"error": "user not found"}
 
+    # -------------------------
+    # 📅 DAILY RESET (ПРАВИЛЬНОЕ МЕСТО)
+    # -------------------------
+    reset_daily(data.user_id)
+
+    # -------------------------
+    # ⛔ ANTI-SPAM
+    # -------------------------
     if not can_click(data.user_id):
         return {"error": "слишком быстро"}
 
-    # =========================
-    # 📅 DAILY RESET (FIX ORDER)
-    # =========================
-    reset_daily(data.user_id)
-
-    # =========================
-    # TASK CHECK
-    # =========================
+    # -------------------------
+    # ❓ TASK VALIDATION
+    # -------------------------
     if data.task not in TASKS:
         return {"error": "неизвестная задача"}
 
     xp, stat = TASKS[data.task]
 
-    # =========================
-    # XP ADD
-    # =========================
+    # -------------------------
+    # 💪 XP ENGINE
+    # -------------------------
     result = add_xp(data.user_id, xp, stat)
 
+    # -------------------------
+    # 🔥 STREAK SYSTEM (FIXED LOGIC)
+    # -------------------------
     user = get_user(data.user_id)
 
-    # =========================
-    # 🔥 STREAK FIX (V6 ADDITION)
-    # =========================
-    streak = user[9] or 0
+    streak = user[12]  # правильный индекс
     update_user(data.user_id, "streak", streak + 1)
 
-    # =========================
-    # RESPONSE
-    # =========================
+    # -------------------------
+    # 📦 RESPONSE
+    # -------------------------
     return {
         **result,
         "streak": streak + 1
     }
 
 
-# =========================
-# 🛒 SHOP API (FIXED)
-# =========================
+# =========================================================
+# 🛒 SHOP API
+# =========================================================
 @app.get("/shop")
 def shop():
     return {"shop": SHOP}
 
 
-# =========================
-# 🌐 MAIN UI
-# =========================
+# =========================================================
+# 🌐 UI
+# =========================================================
 @app.get("/", response_class=HTMLResponse)
 def home():
     return """
