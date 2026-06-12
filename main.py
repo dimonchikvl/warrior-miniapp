@@ -1,23 +1,37 @@
-from fastapi import FastAPI, Request
-from fastapi.templating import Jinja2Templates
-import os
+from fastapi import FastAPI
 
 app = FastAPI()
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
-
 @app.get("/")
-async def home(request: Request):
-    return templates.TemplateResponse(
-        "index.html",
-        {
-            "request": request,
-            "level": 1,
-            "xp": 0,
-            "strength": 0,
-            "discipline": 0,
-            "finance": 0,
-            "content": 0
-        }
-    )
+def home():
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Warrior</title>
+    </head>
+    <body>
+
+    <h1>⚔️ WARRIOR</h1>
+
+    <p>Уровень: 1</p>
+    <p>XP: 0 / 100</p>
+
+    <p>💪 Сила: 0</p>
+    <p>🧠 Дисциплина: 0</p>
+    <p>💰 Финансы: 0</p>
+    <p>📱 Контент: 0</p>
+
+    <hr>
+
+    <h3>Сегодня</h3>
+
+    <button>Тренировка</button><br><br>
+    <button>10000 шагов</button><br><br>
+    <button>Без сигарет</button><br><br>
+    <button>Выложить ролик</button><br><br>
+    <button>Прочитать 10 страниц</button>
+
+    </body>
+    </html>
+    """
