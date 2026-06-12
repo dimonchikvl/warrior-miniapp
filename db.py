@@ -7,16 +7,23 @@ cur = conn.cursor()
 cur.execute("""
 CREATE TABLE IF NOT EXISTS users (
     user_id INTEGER PRIMARY KEY,
+
     xp INTEGER DEFAULT 0,
     level INTEGER DEFAULT 1,
+
+    coins INTEGER DEFAULT 0,
 
     strength INTEGER DEFAULT 0,
     discipline INTEGER DEFAULT 0,
     finance INTEGER DEFAULT 0,
     content INTEGER DEFAULT 0,
 
+    energy INTEGER DEFAULT 100,
+
     streak INTEGER DEFAULT 0,
-    last_day TEXT DEFAULT ''
+    last_day TEXT DEFAULT '',
+
+    achievements TEXT DEFAULT ''
 )
 """)
 
@@ -40,19 +47,10 @@ def update_user(uid, field, value):
     conn.commit()
 
 
-# DAILY STREAK LOGIC
-def update_streak(uid):
+def reset_daily(uid):
     user = get_user(uid)
     today = str(date.today())
 
-    last_day = user[8]
-    streak = user[7]
-
-    if last_day != today:
-        if last_day == str(date.fromordinal(date.today().toordinal() - 1)):
-            streak += 1
-        else:
-            streak = 1
-
-        update_user(uid, "streak", streak)
+    if user[10] != today:
+        update_user(uid, "energy", 100)
         update_user(uid, "last_day", today)
