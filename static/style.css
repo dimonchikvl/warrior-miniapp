@@ -1,5 +1,5 @@
 /* =========================
-   ⚔️ WARRIOR RPG STYLES
+   ⚔️ WARRIOR RPG V6 - FULL UI
    ========================= */
 
 body {
@@ -12,19 +12,19 @@ body {
 }
 
 /* =========================
-   📦 КАРТОЧКИ
+   🧱 КАРТОЧКИ
    ========================= */
 .card {
     background: #1c1c1c;
-    padding: 15px;
+    padding: 16px;
     margin: 10px auto;
     width: 340px;
-    border-radius: 12px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.4);
+    border-radius: 14px;
+    box-shadow: 0 0 12px rgba(0,0,0,0.5);
 }
 
 /* =========================
-   🔘 КНОПКИ
+   🔘 КНОПКИ (ОСНОВНЫЕ ДЕЙСТВИЯ)
    ========================= */
 button {
     width: 340px;
@@ -48,22 +48,32 @@ button:active {
 }
 
 /* =========================
-   📊 ПРОГРЕСС БАР
+   📊 XP БАР
    ========================= */
 .bar {
     width: 340px;
-    height: 10px;
+    height: 12px;
     background: #333;
-    border-radius: 5px;
+    border-radius: 6px;
     overflow: hidden;
     margin: 10px auto;
 }
 
 .fill {
     height: 100%;
-    background: lime;
+    background: linear-gradient(90deg, #00ff88, #00c3ff);
     width: 0%;
-    transition: width 0.3s;
+    transition: width 0.3s ease;
+}
+
+/* =========================
+   💰 СТАТЫ
+   ========================= */
+.stats {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 10px;
+    font-size: 14px;
 }
 
 /* =========================
@@ -73,9 +83,10 @@ button:active {
     background: #222;
     padding: 10px;
     margin: 6px 0;
-    border-radius: 8px;
+    border-radius: 10px;
     text-align: left;
     font-size: 14px;
+    border: 1px solid #333;
 }
 
 /* =========================
@@ -83,9 +94,18 @@ button:active {
    ========================= */
 h1 {
     margin-bottom: 10px;
+    font-size: 22px;
 }
 
 h3 {
     margin-top: 20px;
-    color: #ccc;
+    color: #bbb;
+}
+
+/* =========================
+   📱 TELEGRAM WEBAPP FIX
+   ========================= */
+html, body {
+    height: 100%;
+    overflow-x: hidden;
 }
