@@ -4,7 +4,6 @@ from datetime import date
 conn = sqlite3.connect("game.db", check_same_thread=False)
 cur = conn.cursor()
 
-
 # =========================
 # 🧠 DATABASE
 # =========================
@@ -35,16 +34,21 @@ conn.commit()
 
 
 # =========================
-# 👤 GET USER (SAFE INIT)
+# 👤 GET USER (SAFE INIT FIXED)
 # =========================
 def get_user(uid):
     cur.execute("SELECT * FROM users WHERE user_id=?", (uid,))
     user = cur.fetchone()
 
     if not user:
-        cur.execute("INSERT INTO users(user_id) VALUES(?)", (uid,))
+        cur.execute("""
+            INSERT INTO users(user_id, streak, last_day)
+            VALUES (?, 0, '')
+        """, (uid,))
         conn.commit()
-        return get_user(uid)
+
+        cur.execute("SELECT * FROM users WHERE user_id=?", (uid,))
+        return cur.fetchone()
 
     return user
 
@@ -58,31 +62,40 @@ def update_user(uid, field, value):
 
 
 # =========================
-# 🔥 DAILY RESET (FIXED V6 LOGIC)
+# 🔥 DAILY RESET (FIXED LOGIC V6)
 # =========================
 def reset_daily(uid):
     user = get_user(uid)
+
     today = str(date.today())
+    last_day = user[13]
+    streak = user[12]
 
-    last_day = user[13]   # last_day
-    streak = user[12]     # streak
-
-    if last_day != today:
-
-        # 🔥 streak logic (important fix)
-        new_streak = streak + 1
-
-        # reset daily energy + update streak + date
-        update_user(uid, "energy", 100)
-        update_user(uid, "streak", new_streak)
-        update_user(uid, "last_day", today)
-
+    # -------------------------
+    # 🧠 already reset today
+    # -------------------------
+    if last_day == today:
         return {
-            "reset": True,
-            "streak": new_streak
+            "reset": False,
+            "streak": streak
         }
 
+    # -------------------------
+    # 🔥 STREAK LOGIC FIX
+    # -------------------------
+    if last_day == "":
+        new_streak = 1
+    else:
+        new_streak = streak + 1
+
+    # -------------------------
+    # 🔄 RESET DAILY VALUES
+    # -------------------------
+    update_user(uid, "energy", 100)
+    update_user(uid, "streak", new_streak)
+    update_user(uid, "last_day", today)
+
     return {
-        "reset": False,
-        "streak": streak
+        "reset": True,
+        "streak": new_streak
     }
