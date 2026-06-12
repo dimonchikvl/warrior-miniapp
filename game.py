@@ -166,27 +166,12 @@ def add_xp(uid, amount, stat=None):
     }
 
 
-# =========================
-# 🔥 FULL AI PLAN GENERATOR
-# =========================
 def generate_plan(user):
-    """
-    user format (пример):
-    {
-        "goal": "cut",
-        "weight": 80,
-        "height": 180,
-        "age": 20,
-        "day": 3,
-        "bad_habit": "smoking"
-    }
-    """
-
     goal = user["goal"]
 
     if goal == "cut":
         return {
-            "type": "fat_loss",
+            "type": "cut",
             "steps": steps_plan(user["day"]),
             "kbju": calc_kbju(user["weight"], "cut"),
             "training": training_plan("cut")
@@ -194,7 +179,7 @@ def generate_plan(user):
 
     if goal == "bulk":
         return {
-            "type": "mass_gain",
+            "type": "bulk",
             "steps": steps_plan(user["day"]),
             "kbju": calc_kbju(user["weight"], "bulk"),
             "training": training_plan("bulk")
@@ -202,15 +187,15 @@ def generate_plan(user):
 
     if goal == "discipline":
         return {
-            "type": "habit",
-            "habit_plan": habit_plan(user["bad_habit"])
+            "type": "discipline",
+            "habit": habit_plan(user["bad_habit"])
         }
 
     if goal == "content":
         return {
-            "type": "creator",
-            "content_plan": [
-                "Идея видео",
+            "type": "content",
+            "tasks": [
+                "Идея",
                 "Съёмка",
                 "Монтаж",
                 "Публикация"
