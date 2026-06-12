@@ -8,7 +8,12 @@ from shop import SHOP
 
 app = FastAPI()
 
+@app.post("/generate-plan")
+def plan(data: dict):
+    from game import generate_plan
 
+    return generate_plan(data)
+    
 @app.post("/complete-task")
 def complete_task(data: Task):
 
