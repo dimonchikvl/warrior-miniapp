@@ -1,7 +1,9 @@
 import sqlite3
 from datetime import date
+from typing import Optional, Dict, Any
 
 conn = sqlite3.connect("game.db", check_same_thread=False)
+conn.row_factory = sqlite3.Row  # 🔥 Возвращаем словари вместо кортежей
 cur = conn.cursor()
 
 # =========================
@@ -10,21 +12,26 @@ cur = conn.cursor()
 cur.execute("""
 CREATE TABLE IF NOT EXISTS users (
     user_id INTEGER PRIMARY KEY,
-
+    
     step TEXT DEFAULT 'onboarding',
-
+    
     goal TEXT,
     age INTEGER,
     height INTEGER,
     weight INTEGER,
     activity TEXT,
     bad_habit TEXT,
-
+    
     xp INTEGER DEFAULT 0,
     level INTEGER DEFAULT 1,
     coins INTEGER DEFAULT 0,
     energy INTEGER DEFAULT 100,
-
+    
+    strength INTEGER DEFAULT 0,
+    discipline INTEGER DEFAULT 0,
+    finance INTEGER DEFAULT 0,
+    content INTEGER DEFAULT 0,
+    
     streak INTEGER DEFAULT 0,
     last_day TEXT DEFAULT ''
 )
@@ -36,7 +43,11 @@ conn.commit()
 # =========================
 # 👤 GET USER (SAFE INIT FIXED)
 # =========================
-def get_user(uid):
+def get_user(uid: int) -> Optional[Dict[str, Any]]:
+    """
+    Получить пользователя по ID или создать нового
+    Возвращает словарь для удобного доступа
+    """
     cur.execute("SELECT * FROM users WHERE user_id=?", (uid,))
     user = cur.fetchone()
 
@@ -56,11 +67,15 @@ def get_user(uid):
                 level,
                 coins,
                 energy,
+                strength,
+                discipline,
+                finance,
+                content,
                 streak,
                 last_day
             )
             VALUES (?, 'onboarding', NULL, NULL, NULL, NULL, NULL, NULL,
-                    0, 1, 0, 100, 0, '')
+                    0, 1, 0, 100, 0, 0, 0, 0, 0, '')
         """, (uid,))
 
         conn.commit()
@@ -74,7 +89,10 @@ def get_user(uid):
 # =========================
 # ✏️ UPDATE FIELD
 # =========================
-def update_user(uid, field, value):
+def update_user(uid: int, field: str, value: Any) -> None:
+    """
+    Обновить поле пользователя
+    """
     cur.execute(f"UPDATE users SET {field}=? WHERE user_id=?", (value, uid))
     conn.commit()
 
@@ -82,13 +100,20 @@ def update_user(uid, field, value):
 # =========================
 # 🔥 DAILY RESET (FIXED LOGIC V6)
 # =========================
-def reset_daily(uid):
+def reset_daily(uid: int) -> Dict[str, Any]:
+    """
+    Ежедневный сброс энергии и обновление серии
+    Возвращает информацию о сбросе
+    """
     user = get_user(uid)
+
+    if not user:
+        return {"error": "user not found"}
 
     today = str(date.today())
 
-    last_day = user[13] or ""
-    streak = user[12] or 0
+    last_day = user["last_day"] or ""
+    streak = user["streak"] or 0
 
     # =========================
     # 🧠 уже обновляли сегодня
