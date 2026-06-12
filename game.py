@@ -1,4 +1,5 @@
-from db import get_user
+from db import get_user, update_user
+
 
 def xp_needed(level):
     return 100 + (level - 1) * 50
@@ -7,21 +8,35 @@ def xp_needed(level):
 def add_xp(uid, amount, stat=None):
     user = get_user(uid)
 
-    user["xp"] += amount
+    xp = user[1]
+    level = user[2]
 
-    if stat:
-        user[stat] += 1
+    strength = user[3]
+    discipline = user[4]
+    finance = user[5]
+    content = user[6]
 
-    # level up
-    while user["xp"] >= xp_needed(user["level"]):
-        user["xp"] -= xp_needed(user["level"])
-        user["level"] += 1
+    # XP + stat
+    xp += amount
 
+    if stat == "strength":
+        strength += 1
+    elif stat == "discipline":
+        discipline += 1
+    elif stat == "finance":
+        finance += 1
+    elif stat == "content":
+        content += 1
 
-TASKS = {
-    "train": (25, "strength"),
-    "steps": (20, "discipline"),
-    "no_smoke": (30, "discipline"),
-    "video": (25, "content"),
-    "book": (15, "discipline")
-}
+    # LEVEL UP
+    while xp >= xp_needed(level):
+        xp -= xp_needed(level)
+        level += 1
+
+    # SAVE
+    update_user(uid, "xp", xp)
+    update_user(uid, "level", level)
+    update_user(uid, "strength", strength)
+    update_user(uid, "discipline", discipline)
+    update_user(uid, "finance", finance)
+    update_user(uid, "content", content)
