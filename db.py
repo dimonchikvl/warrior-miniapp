@@ -4,6 +4,10 @@ from datetime import date
 conn = sqlite3.connect("game.db", check_same_thread=False)
 cur = conn.cursor()
 
+
+# =========================
+# 🧠 DATABASE
+# =========================
 cur.execute("""
 CREATE TABLE IF NOT EXISTS users (
     user_id INTEGER PRIMARY KEY,
@@ -30,6 +34,9 @@ CREATE TABLE IF NOT EXISTS users (
 conn.commit()
 
 
+# =========================
+# 👤 GET USER (SAFE INIT)
+# =========================
 def get_user(uid):
     cur.execute("SELECT * FROM users WHERE user_id=?", (uid,))
     user = cur.fetchone()
@@ -42,15 +49,40 @@ def get_user(uid):
     return user
 
 
+# =========================
+# ✏️ UPDATE FIELD
+# =========================
 def update_user(uid, field, value):
     cur.execute(f"UPDATE users SET {field}=? WHERE user_id=?", (value, uid))
     conn.commit()
 
 
+# =========================
+# 🔥 DAILY RESET (FIXED V6 LOGIC)
+# =========================
 def reset_daily(uid):
     user = get_user(uid)
     today = str(date.today())
 
-    if user[13] != today:
+    last_day = user[13]   # last_day
+    streak = user[12]     # streak
+
+    if last_day != today:
+
+        # 🔥 streak logic (important fix)
+        new_streak = streak + 1
+
+        # reset daily energy + update streak + date
         update_user(uid, "energy", 100)
+        update_user(uid, "streak", new_streak)
         update_user(uid, "last_day", today)
+
+        return {
+            "reset": True,
+            "streak": new_streak
+        }
+
+    return {
+        "reset": False,
+        "streak": streak
+    }
