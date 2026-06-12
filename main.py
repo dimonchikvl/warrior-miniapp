@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
 from models import Task
 from game import add_xp, TASKS, can_click, generate_plan
@@ -7,8 +8,7 @@ from db import get_user, reset_daily, update_user
 from shop import SHOP
 
 app = FastAPI()
-
-
+app.mount("/static", StaticFiles(directory="static"), name="static")
 # =========================================================
 # 🧠 HELPER: SAFE USER
 # =========================================================
@@ -54,16 +54,17 @@ def complete_task(data: Task):
     if not user:
         return {"error": "user not found"}
 
-    # -------------------------
-    # 📅 DAILY RESET (ПРАВИЛЬНОЕ МЕСТО)
-    # -------------------------
-    reset_daily(data.user_id)
-
-    # -------------------------
+       # -------------------------
     # ⛔ ANTI-SPAM
     # -------------------------
     if not can_click(data.user_id):
         return {"error": "слишком быстро"}
+        
+     # -------------------------
+    # 📅 DAILY RESET (ПРАВИЛЬНОЕ МЕСТО)
+    # -------------------------
+    reset = reset_daily(data.user_id)
+    streak = reset["streak"]
 
     # -------------------------
     # ❓ TASK VALIDATION
@@ -83,8 +84,8 @@ def complete_task(data: Task):
     # -------------------------
     user = get_user(data.user_id)
 
-    streak = user[12]  # правильный индекс
-    update_user(data.user_id, "streak", streak + 1)
+    # streak уже считается в reset_daily
+    streak = user[12]
 
     # -------------------------
     # 📦 RESPONSE
@@ -113,7 +114,7 @@ def home():
 <html>
 <head>
 <title>⚔️ ВОИН V6</title>
-
+<link rel="stylesheet" href="/static/style.css">
 <style>
 body{
 background:#0f0f0f;
@@ -198,9 +199,9 @@ async function act(task){
 
 let uid = 1;
 
-try{
- uid = window.Telegram.WebApp.initDataUnsafe.user.id;
-}catch(e){}
+try {
+    uid = window.Telegram.WebApp.initDataUnsafe.user.id;
+} catch(e) {}
 
 const r = await fetch("/complete-task",{
 method:"POST",
@@ -215,8 +216,11 @@ alert(d.error);
 return;
 }
 
-let need = 120 + (d.level-1)*80;
-let percent = (d.xp/need)*100;
+let level = d.level || 1;
+let xp = d.xp || 0;
+
+let need = 120 + (level-1)*80;
+let percent = (xp/need)*100;
 
 document.getElementById("level").innerText="Уровень: "+d.level;
 document.getElementById("xp").innerText="Опыт: "+d.xp+" / "+need;
