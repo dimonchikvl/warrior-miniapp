@@ -16,8 +16,16 @@ def xp_needed(level):
     return 120 + (level - 1) * 80
 
 
-def add_xp(uid, amount, stat=None):
+TASKS = {
+    "train": (40, "strength"),
+    "steps": (30, "discipline"),
+    "no_smoke": (50, "discipline"),
+    "video": (40, "content"),
+    "book": (20, "discipline")
+}
 
+
+def add_xp(uid, amount, stat=None):
     user = get_user(uid)
 
     xp = user[1]
@@ -32,11 +40,9 @@ def add_xp(uid, amount, stat=None):
     energy = user[8]
 
     if energy <= 0:
-        return {"error": "no energy"}
+        return {"error": "нет энергии"}
 
-    # ENERGY COST
     energy -= 8
-
     xp += amount
     coins += amount // 2
 
@@ -78,12 +84,3 @@ def add_xp(uid, amount, stat=None):
         "energy": energy,
         "leveled_up": leveled_up
     }
-
-
-TASKS = {
-    "train": (40, "strength"),
-    "steps": (30, "discipline"),
-    "no_smoke": (50, "discipline"),
-    "video": (40, "content"),
-    "book": (20, "discipline")
-}
