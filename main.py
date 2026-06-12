@@ -196,8 +196,17 @@ border-radius:8px;
 
 <script>
 async function act(task){
+console.log("INIT TELEGRAM USER:", window.Telegram);
 
 let uid = 1;
+
+try {
+    uid = window.Telegram.WebApp.initDataUnsafe.user.id;
+} catch(e) {
+    console.log("Telegram user not found, fallback = 1");
+}
+
+console.log("USER ID =", uid);
 
 try {
     uid = window.Telegram.WebApp.initDataUnsafe.user.id;
