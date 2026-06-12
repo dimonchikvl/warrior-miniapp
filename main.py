@@ -2,6 +2,11 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
+from models import Task
+from game import add_xp, TASKS, can_click
+from db import get_user, reset_daily
+from quests import DAILY_QUESTS
+from shop import SHOP
 from game import add_xp, TASKS, can_click
 from db import get_user, reset_daily
 
