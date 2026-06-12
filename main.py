@@ -1,32 +1,22 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-
 from pydantic import BaseModel
+
+from game import add_xp, TASKS
 from db import get_user
-from game import add_xp
 
 app = FastAPI()
 
 # =========================
-# TASK REWARDS
-# =========================
-TASKS = {
-    "train": (25, "strength"),
-    "steps": (20, "discipline"),
-    "no_smoke": (30, "discipline"),
-    "video": (25, "content"),
-    "book": (15, "discipline")
-}
-
-# =========================
-# MODEL
+# REQUEST MODEL
 # =========================
 class Task(BaseModel):
     user_id: int
     task: str
 
+
 # =========================
-# API: COMPLETE TASK
+# COMPLETE TASK API
 # =========================
 @app.post("/complete-task")
 def complete_task(data: Task):
@@ -36,22 +26,13 @@ def complete_task(data: Task):
 
     xp, stat = TASKS[data.task]
 
-    add_xp(data.user_id, xp, stat)
+    result = add_xp(data.user_id, xp, stat)
 
-    user = get_user(data.user_id)
+    return result
 
-    return {
-        "xp": user[1],
-        "level": user[2],
-        "strength": user[3],
-        "discipline": user[4],
-        "finance": user[5],
-        "content": user[6],
-        "streak": user[7]
-    }
 
 # =========================
-# MINI APP FRONTEND
+# MINI APP UI
 # =========================
 @app.get("/", response_class=HTMLResponse)
 def home():
@@ -107,7 +88,7 @@ def home():
 
 <div class="card">
     <p id="level">Уровень: 1</p>
-    <p id="xp">XP: 0</p>
+    <p id="xp">XP: 0 / 100</p>
 </div>
 
 <div class="stats">
@@ -147,11 +128,13 @@ async function complete(task) {
 
     const data = await res.json();
 
+    let nextXP = 100 + (data.level - 1) * 50;
+
     document.getElementById("level").innerText =
         "Уровень: " + data.level;
 
     document.getElementById("xp").innerText =
-        "XP: " + data.xp;
+        "XP: " + data.xp + " / " + nextXP;
 
     document.getElementById("strength").innerText =
         data.strength;
@@ -164,6 +147,10 @@ async function complete(task) {
 
     document.getElementById("content").innerText =
         data.content;
+
+    if (data.leveled_up) {
+        alert("LEVEL UP! ⚔️");
+    }
 }
 </script>
 
