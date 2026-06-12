@@ -10,7 +10,6 @@ CREATE TABLE IF NOT EXISTS users (
 
     xp INTEGER DEFAULT 0,
     level INTEGER DEFAULT 1,
-
     coins INTEGER DEFAULT 0,
 
     strength INTEGER DEFAULT 0,
@@ -21,9 +20,7 @@ CREATE TABLE IF NOT EXISTS users (
     energy INTEGER DEFAULT 100,
 
     streak INTEGER DEFAULT 0,
-    last_day TEXT DEFAULT '',
-
-    achievements TEXT DEFAULT ''
+    last_day TEXT DEFAULT ''
 )
 """)
 
