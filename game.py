@@ -84,3 +84,23 @@ def add_xp(uid, amount, stat=None):
         "energy": energy,
         "leveled_up": leveled_up
     }
+    # ===== NUTRITION SYSTEM =====
+def calc_kbju(weight, goal):
+    protein = weight * 1.6
+
+    if goal == "bulk":
+        calories = weight * 33
+    elif goal == "cut":
+        calories = weight * 25
+    else:
+        calories = weight * 30
+
+    fat = weight * 1
+    carbs = (calories - protein*4 - fat*9) / 4
+
+    return {
+        "calories": int(calories),
+        "protein": int(protein),
+        "fat": int(fat),
+        "carbs": int(carbs)
+    }
