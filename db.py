@@ -40,11 +40,29 @@ def get_user(uid):
     cur.execute("SELECT * FROM users WHERE user_id=?", (uid,))
     user = cur.fetchone()
 
+    # 🔥 если юзера нет — создаём полностью с дефолтами
     if not user:
         cur.execute("""
-            INSERT INTO users(user_id, streak, last_day)
-            VALUES (?, 0, '')
+            INSERT INTO users(
+                user_id,
+                step,
+                goal,
+                age,
+                height,
+                weight,
+                activity,
+                bad_habit,
+                xp,
+                level,
+                coins,
+                energy,
+                streak,
+                last_day
+            )
+            VALUES (?, 'onboarding', NULL, NULL, NULL, NULL, NULL, NULL,
+                    0, 1, 0, 100, 0, '')
         """, (uid,))
+
         conn.commit()
 
         cur.execute("SELECT * FROM users WHERE user_id=?", (uid,))
@@ -68,29 +86,30 @@ def reset_daily(uid):
     user = get_user(uid)
 
     today = str(date.today())
-    last_day = user[13]
-    streak = user[12]
 
-    # -------------------------
-    # 🧠 already reset today
-    # -------------------------
+    last_day = user[13] or ""
+    streak = user[12] or 0
+
+    # =========================
+    # 🧠 уже обновляли сегодня
+    # =========================
     if last_day == today:
         return {
             "reset": False,
             "streak": streak
         }
 
-    # -------------------------
-    # 🔥 STREAK LOGIC FIX
-    # -------------------------
+    # =========================
+    # 🔥 логика серии
+    # =========================
     if last_day == "":
         new_streak = 1
     else:
         new_streak = streak + 1
 
-    # -------------------------
-    # 🔄 RESET DAILY VALUES
-    # -------------------------
+    # =========================
+    # 🔄 сброс дневных параметров
+    # =========================
     update_user(uid, "energy", 100)
     update_user(uid, "streak", new_streak)
     update_user(uid, "last_day", today)
