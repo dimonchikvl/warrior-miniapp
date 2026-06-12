@@ -1,14 +1,5 @@
 SHOP = {
-    "energy_boost": {
-        "cost": 100,
-        "effect": "energy+20"
-    },
-    "xp_boost": {
-        "cost": 150,
-        "effect": "xp_multiplier"
-    },
-    "coin_boost": {
-        "cost": 120,
-        "effect": "coins+50"
-    }
+    "energy": {"cost": 100, "name": "⚡ Энергия +20"},
+    "xp": {"cost": 150, "name": "📈 Буст XP"},
+    "coins": {"cost": 120, "name": "💰 Монеты +50"}
 }
