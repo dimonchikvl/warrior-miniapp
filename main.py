@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
 from game import add_xp, TASKS, can_click
-from db import get_user, update_streak
+from db import get_user, reset_daily
 
 app = FastAPI()
 
@@ -17,12 +17,12 @@ class Task(BaseModel):
 def complete_task(data: Task):
 
     if not can_click(data.user_id):
-        return {"error": "slow down"}
+        return {"error": "slow"}
+
+    reset_daily(data.user_id)
 
     if data.task not in TASKS:
-        return {"error": "unknown task"}
-
-    update_streak(data.user_id)
+        return {"error": "unknown"}
 
     xp, stat = TASKS[data.task]
 
@@ -32,118 +32,112 @@ def complete_task(data: Task):
 
     return {
         **result,
-        "streak": user[7]
+        "streak": user[9]
     }
 
 
+# =========================
+# MINI APP UI
+# =========================
 @app.get("/", response_class=HTMLResponse)
 def home():
     return """
 <!DOCTYPE html>
 <html>
 <head>
-<title>Warrior RPG PRO</title>
+<title>WARRIOR V3</title>
 
 <style>
-body {
-    background:#0f0f0f;
-    color:white;
-    font-family:Arial;
-    text-align:center;
-    padding:20px;
+body{
+background:#0f0f0f;
+color:white;
+font-family:Arial;
+text-align:center;
+padding:20px;
 }
 
-.card {
-    background:#1c1c1c;
-    padding:15px;
-    margin:10px auto;
-    width:320px;
-    border-radius:12px;
+.card{
+background:#1c1c1c;
+padding:15px;
+margin:10px auto;
+width:340px;
+border-radius:12px;
 }
 
-button {
-    width:320px;
-    padding:12px;
-    margin:6px;
-    border-radius:10px;
-    border:none;
-    background:#2d6cdf;
-    color:white;
-    font-size:16px;
+button{
+width:340px;
+padding:12px;
+margin:6px;
+border-radius:10px;
+border:none;
+background:#2d6cdf;
+color:white;
+font-size:16px;
 }
 
-.bar {
-    width:320px;
-    height:10px;
-    background:#333;
-    border-radius:5px;
-    margin:auto;
-}
-
-.fill {
-    height:10px;
-    background:#4caf50;
-    width:0%;
+.shop{
+background:#222;
+padding:10px;
+margin:5px;
+border-radius:8px;
 }
 </style>
 </head>
 
 <body>
 
-<h1>⚔️ WARRIOR PRO</h1>
+<h1>⚔️ WARRIOR V3</h1>
 
 <div class="card">
-<p id="level">Level: 1</p>
-<p id="xp">XP: 0 / 100</p>
-<div class="bar"><div id="bar" class="fill"></div></div>
-<p id="streak">🔥 Streak: 0</p>
+<p id="level">Level 1</p>
+<p id="xp">XP 0</p>
+<p id="coins">Coins 0</p>
+<p id="energy">Energy 100</p>
 </div>
 
 <div class="card">
-<div>💪 <span id="str">0</span></div>
-<div>🧠 <span id="disc">0</span></div>
-<div>💰 <span id="fin">0</span></div>
-<div>📱 <span id="cont">0</span></div>
-</div>
-
-<h3>Today quests</h3>
-
 <button onclick="act('train')">🏋️ Train</button>
 <button onclick="act('steps')">🚶 Steps</button>
 <button onclick="act('no_smoke')">🚭 No smoke</button>
 <button onclick="act('video')">🎥 Video</button>
-<button onclick="act('book')">📚 Read</button>
+<button onclick="act('book')">📚 Book</button>
+</div>
+
+<div class="card">
+<h3>🛒 Shop</h3>
+<div class="shop">Energy +20 (100 coins)</div>
+<div class="shop">XP Boost (150 coins)</div>
+<div class="shop">Coin Boost (120 coins)</div>
+</div>
 
 <script>
 async function act(task){
 
 let uid = 1;
 
-try {
+try{
  uid = window.Telegram.WebApp.initDataUnsafe.user.id;
 }catch(e){}
 
-const res = await fetch("/complete-task",{
+const r = await fetch("/complete-task",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({user_id:uid,task:task})
 });
 
-const d = await res.json();
+const d = await r.json();
 
-let need = 100 + (d.level-1)*60;
-let percent = (d.xp/need)*100;
+if(d.error){
+alert(d.error);
+return;
+}
 
-document.getElementById("level").innerText="Level: "+d.level;
-document.getElementById("xp").innerText="XP: "+d.xp+" / "+need;
-document.getElementById("bar").style.width=percent+"%";
+let need = 120 + (d.level-1)*80;
 
-document.getElementById("str").innerText=d.strength;
-document.getElementById("disc").innerText=d.discipline;
-document.getElementById("fin").innerText=d.finance;
-document.getElementById("cont").innerText=d.content;
-
-document.getElementById("streak").innerText="🔥 Streak: "+d.streak;
+document.getElementById("level").innerText="Level "+d.level;
+document.getElementById("xp").innerText="XP "+d.xp+" / "+need;
+document.getElementById("coins").innerText="Coins "+d.coins;
+document.getElementById("energy").innerText="Energy "+d.energy;
 
 if(d.leveled_up){
 alert("LEVEL UP ⚔️");
