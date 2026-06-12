@@ -1,4 +1,5 @@
 import time
+from typing import Optional, Dict, Any, Tuple
 from db import get_user, update_user
 
 # =========================
@@ -6,7 +7,7 @@ from db import get_user, update_user
 # =========================
 COOLDOWN = {}
 
-def can_click(uid):
+def can_click(uid: int) -> bool:
     """
     Запрещает спамить кнопки (1.5 сек задержка)
     """
@@ -22,7 +23,7 @@ def can_click(uid):
 # =========================
 # 📊 ОПЫТ ДЛЯ УРОВНЕЙ
 # =========================
-def xp_needed(level):
+def xp_needed(level: int) -> int:
     """
     Сколько XP нужно для следующего уровня
     """
@@ -44,7 +45,7 @@ TASKS = {
 # =========================
 # 🧠 КБЖУ КАЛЬКУЛЯТОР
 # =========================
-def calc_kbju(weight, goal):
+def calc_kbju(weight: int, goal: str) -> Dict[str, int]:
     """
     Расчёт калорий и БЖУ под цель
     """
@@ -71,7 +72,7 @@ def calc_kbju(weight, goal):
 # =========================
 # 🚶 ПРОГРЕСС ШАГОВ
 # =========================
-def steps_plan(day):
+def steps_plan(day: int) -> int:
     """
     Увеличение шагов каждый день до 12000
     """
@@ -83,7 +84,7 @@ def steps_plan(day):
 # =========================
 # 💪 ТРЕНИРОВКИ
 # =========================
-def training_plan(goal):
+def training_plan(goal: str) -> list:
     """
     План тренировок под цель
     """
@@ -99,7 +100,7 @@ def training_plan(goal):
 # =========================
 # 🧠 ПРИВЫЧКИ
 # =========================
-def habit_plan(habit):
+def habit_plan(habit: str) -> list:
     """
     План для отказа от привычек
     """
@@ -128,7 +129,7 @@ def habit_plan(habit):
 # =========================
 # 🧩 ОСНОВНАЯ XP ЛОГИКА
 # =========================
-def add_xp(uid, amount, stat=None):
+def add_xp(uid: int, amount: int, stat: Optional[str] = None) -> Dict[str, Any]:
     """
     Добавляет XP, монеты и прокачку статов
     """
@@ -139,16 +140,16 @@ def add_xp(uid, amount, stat=None):
     if not user:
         return {"error": "user not found"}
 
-    xp = user[1]
-    level = user[2]
-    coins = user[3]
+    xp = user["xp"]
+    level = user["level"]
+    coins = user["coins"]
 
-    strength = user[4]
-    discipline = user[5]
-    finance = user[6]
-    content = user[7]
+    strength = user["strength"]
+    discipline = user["discipline"]
+    finance = user["finance"]
+    content = user["content"]
 
-    energy = user[8]
+    energy = user["energy"]
 
     # если энергии нет — блок
     if energy <= 0:
@@ -205,7 +206,7 @@ def add_xp(uid, amount, stat=None):
 # =========================
 # 🔥 ГЕНЕРАЦИЯ ПЛАНА (ИСПРАВЛЕНО)
 # =========================
-def generate_plan(user):
+def generate_plan(user: Dict[str, Any]) -> Dict[str, Any]:
     """
     Генерация персонального плана
     """
@@ -213,7 +214,7 @@ def generate_plan(user):
     if not user:
         return {"error": "no user"}
 
-    goal = user["goal"]
+    goal = user.get("goal")
 
     # защита от пустых значений
     weight = user.get("weight", 70)
